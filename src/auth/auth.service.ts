@@ -1,26 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { JwtService } from '@nestjs/jwt';
+import { Provider } from 'src/common/enum/provider.enum';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { User } from 'src/user/entities/user.entity';
+import { UserRepository } from 'src/user/user.repository';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userRepository: UserRepository,
+  ) {}
+
+  /* JWT 생성 */
+  async generateJwtToken(userId: number): Promise<string> {
+    return this.jwtService.sign(
+      { userId },
+      {
+        secret: process.env.JWT_SECRET,
+      },
+    );
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  /* 사용자 검증 */
+  async validateUser(email: string, provider: Provider): Promise<User | null> {
+    const user = await this.userRepository.findUserByEmail(email, provider);
+    if (!user) return user;
+    return user;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  /* Pk로 조회 */
+  async findUserByPk(userId: number): Promise<User> {
+    return await this.userRepository.findUserByPk(userId);
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  /* 고객 정보 생성 */
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    return await this.userRepository.createUser(createUserDto);
   }
 }
