@@ -23,17 +23,33 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<{ access_token: string }> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.validateUser(email, password);
     if (!user) {
-      throw new UnauthorizedException('이메일을 확인해주세요.');
+      throw new UnauthorizedException('이메일 또는 비밀번호를 확인해주세요.');
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('비밀번호를 확인해주세요.');
-    }
+
     const payload = { email: user.email, sub: user.id };
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET || 'defaultSecretKey',
+      }),
     };
+  }
+
+  async signup(
+    email: string,
+    password: string,
+    nickname?: string,
+  ): Promise<any> {
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new UnauthorizedException('이미 사용 중인 이메일입니다.');
+    }
+
+    return this.usersService.create({
+      email,
+      password,
+      nickname,
+    });
   }
 }

@@ -8,11 +8,6 @@ import { Request } from 'express';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Req() req: Request) {
