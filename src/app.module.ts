@@ -8,6 +8,7 @@ import { RecommendModule } from './recommend/recommend.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AchievementsModule } from './achievements/achievements.module';
+import { GoalsModule } from './goals/goals.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { envVariables } from './common/const/env.const';
@@ -54,6 +55,7 @@ import { envVariables } from './common/const/env.const';
     AuthModule,
     UsersModule,
     AchievementsModule,
+    GoalsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

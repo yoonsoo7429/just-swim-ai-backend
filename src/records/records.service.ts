@@ -9,6 +9,7 @@ import { CreateRecordDto } from './dto/create-record.dto';
 import { Record } from './entities/record.entity';
 import { AchievementsService } from '../achievements/achievements.service';
 import { Achievement } from '../achievements/entities/achievement.entity';
+import { GoalsService } from '../goals/goals.service';
 
 @Injectable()
 export class RecordsService {
@@ -16,6 +17,7 @@ export class RecordsService {
     @InjectRepository(Record)
     private recordsRepository: Repository<Record>,
     private achievementsService: AchievementsService,
+    private goalsService: GoalsService,
   ) {}
 
   async create(
@@ -37,6 +39,9 @@ export class RecordsService {
       // 성취 확인 및 생성
       const newAchievements =
         await this.achievementsService.checkAndCreateAchievements(userId);
+
+      // 목표 진행률 업데이트
+      await this.goalsService.updateGoalProgress(userId);
 
       return {
         ...savedRecord,
