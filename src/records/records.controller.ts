@@ -20,4 +20,28 @@ export class RecordsController {
     const user = req.user as { userId: number; email: string };
     return this.recordsService.findByUserId(user.userId);
   }
+
+  @Get('stats')
+  async getUserStats(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recordsService.getUserStats(user.userId);
+  }
+
+  @Get('stats/style')
+  async getStyleStats(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recordsService.getStyleStats(user.userId);
+  }
+
+  @Get('personal-bests')
+  async getPersonalBests(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recordsService.getPersonalBests(user.userId);
+  }
+
+  @Get('weekly-stats')
+  async getWeeklyStats(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recordsService.getWeeklyStats(user.userId);
+  }
 }
