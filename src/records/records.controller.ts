@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RecordsService } from './records.service';
 import { Request } from 'express';
 import { CreateRecordDto } from './dto/create-record.dto';
+import { CreateDetailedRecordDto } from './dto/create-detailed-record.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('records')
@@ -13,6 +14,15 @@ export class RecordsController {
   async createRecord(@Body() body: CreateRecordDto, @Req() req: Request) {
     const user = req.user as { userId: number; email: string };
     return this.recordsService.create(body, user.userId);
+  }
+
+  @Post('detailed')
+  async createDetailedRecord(
+    @Body() body: CreateDetailedRecordDto,
+    @Req() req: Request,
+  ) {
+    const user = req.user as { userId: number; email: string };
+    return this.recordsService.createDetailed(body, user.userId);
   }
 
   @Get()

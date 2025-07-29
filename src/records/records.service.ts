@@ -6,7 +6,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { CreateRecordDto } from './dto/create-record.dto';
+import { CreateDetailedRecordDto } from './dto/create-detailed-record.dto';
 import { Record } from './entities/record.entity';
+import { DetailedRecord } from './entities/detailed-record.entity';
+import { SwimSegment } from './entities/swim-segment.entity';
 import { AchievementsService } from '../achievements/achievements.service';
 import { Achievement } from '../achievements/entities/achievement.entity';
 import { GoalsService } from '../goals/goals.service';
@@ -16,6 +19,10 @@ export class RecordsService {
   constructor(
     @InjectRepository(Record)
     private recordsRepository: Repository<Record>,
+    @InjectRepository(DetailedRecord)
+    private detailedRecordsRepository: Repository<DetailedRecord>,
+    @InjectRepository(SwimSegment)
+    private swimSegmentsRepository: Repository<SwimSegment>,
     private achievementsService: AchievementsService,
     private goalsService: GoalsService,
   ) {}
@@ -53,6 +60,89 @@ export class RecordsService {
         throw error;
       }
       throw new BadRequestException('기록 저장 중 오류가 발생했습니다.');
+    }
+  }
+
+  async createDetailed(
+    createDetailedRecordDto: CreateDetailedRecordDto,
+    userId: number,
+  ): Promise<
+    DetailedRecord & { analysis: any; newAchievements: Achievement[] }
+  > {
+    try {
+      // 총 거리, 시간, 랩 수 계산
+      const totalDistance = createDetailedRecordDto.segments.reduce(
+        (sum, segment) => sum + segment.distance,
+        0,
+      );
+      const totalDuration = createDetailedRecordDto.segments.reduce(
+        (sum, segment) => sum + segment.duration,
+        0,
+      );
+      const totalLaps = createDetailedRecordDto.segments.reduce(
+        (sum, segment) => sum + segment.laps,
+        0,
+      );
+
+      // 평균 페이스 계산 (100m당 분 단위)
+      const averagePace =
+        totalDistance > 0 ? (totalDuration / totalDistance) * 100 : 0;
+
+      // 상세 기록 생성
+      const detailedRecord = this.detailedRecordsRepository.create({
+        ...createDetailedRecordDto,
+        userId,
+        totalDistance,
+        totalDuration,
+        totalLaps,
+        averagePace,
+      });
+
+      const savedDetailedRecord =
+        await this.detailedRecordsRepository.save(detailedRecord);
+
+      // 세그먼트 생성 및 저장
+      const segments = createDetailedRecordDto.segments.map((segmentDto) => {
+        const segment = this.swimSegmentsRepository.create({
+          ...segmentDto,
+          detailedRecordId: savedDetailedRecord.id,
+        });
+        return segment;
+      });
+
+      await this.swimSegmentsRepository.save(segments);
+
+      // 훈련 세션 분석 (기존 Record 엔티티를 임시로 생성하여 분석)
+      const tempRecord = this.recordsRepository.create({
+        userId,
+        date: createDetailedRecordDto.date,
+        distance: totalDistance,
+        style: createDetailedRecordDto.segments[0]?.style || 'freestyle',
+        duration: totalDuration,
+        frequencyPerWeek: createDetailedRecordDto.frequencyPerWeek,
+        goal: createDetailedRecordDto.goal,
+      });
+
+      const analysis = await this.analyzeTrainingSession(tempRecord, userId);
+
+      // 성취 확인 및 생성
+      const newAchievements =
+        await this.achievementsService.checkAndCreateAchievements(userId);
+
+      // 목표 진행률 업데이트
+      await this.goalsService.updateGoalProgress(userId);
+
+      return {
+        ...savedDetailedRecord,
+        segments,
+        analysis,
+        newAchievements,
+      } as DetailedRecord & { analysis: any; newAchievements: Achievement[] };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException('상세 기록 저장 중 오류가 발생했습니다.');
     }
   }
 
