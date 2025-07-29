@@ -7,18 +7,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { Record } from './entities/record.entity';
+import { AchievementsService } from '../achievements/achievements.service';
+import { Achievement } from '../achievements/entities/achievement.entity';
 
 @Injectable()
 export class RecordsService {
   constructor(
     @InjectRepository(Record)
     private recordsRepository: Repository<Record>,
+    private achievementsService: AchievementsService,
   ) {}
 
   async create(
     createRecordDto: CreateRecordDto,
     userId: number,
-  ): Promise<Record> {
+  ): Promise<Record & { analysis: any; newAchievements: Achievement[] }> {
     try {
       const record = this.recordsRepository.create({
         ...createRecordDto,
@@ -31,10 +34,15 @@ export class RecordsService {
       // 훈련 세션 분석 결과를 포함하여 반환
       const analysis = await this.analyzeTrainingSession(savedRecord, userId);
 
+      // 성취 확인 및 생성
+      const newAchievements =
+        await this.achievementsService.checkAndCreateAchievements(userId);
+
       return {
         ...savedRecord,
         analysis,
-      } as any;
+        newAchievements,
+      } as Record & { analysis: any; newAchievements: Achievement[] };
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
