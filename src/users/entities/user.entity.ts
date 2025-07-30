@@ -1,7 +1,6 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Record } from 'src/records/entities/record.entity';
-import { DetailedRecord } from 'src/records/entities/detailed-record.entity';
 import { Achievement } from '../../achievements/entities/achievement.entity';
 import { Goal } from '../../goals/entities/goal.entity';
 
@@ -33,10 +32,4 @@ export class User extends BaseEntity {
     cascade: true,
   })
   goals: Goal[];
-
-  @OneToMany(() => DetailedRecord, (detailedRecord) => detailedRecord.user, {
-    eager: true,
-    cascade: true,
-  })
-  detailedRecords: DetailedRecord[];
 }

@@ -1,11 +1,11 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { DetailedRecord } from './detailed-record.entity';
+import { Record } from './record.entity';
 
 @Entity('swim_segments')
 export class SwimSegment extends BaseEntity {
-  @Column({ name: 'detailed_record_id' })
-  detailedRecordId: number;
+  @Column({ name: 'record_id' })
+  recordId: number;
 
   @Column()
   style: string;
@@ -28,7 +28,7 @@ export class SwimSegment extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ManyToOne(() => DetailedRecord, (detailedRecord) => detailedRecord.segments)
-  @JoinColumn({ name: 'detailed_record_id' })
-  detailedRecord: DetailedRecord;
+  @ManyToOne(() => Record, (record) => record.segments)
+  @JoinColumn({ name: 'record_id' })
+  record: Record;
 }

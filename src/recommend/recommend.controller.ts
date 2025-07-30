@@ -23,4 +23,16 @@ export class RecommendController {
     const user = req.user as { userId: number; email: string };
     return this.recommendService.findByUserId(user.userId);
   }
+
+  @Get('profile')
+  async getUserProfile(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recommendService.analyzeUserProfile(user.userId);
+  }
+
+  @Get('stats')
+  async getRecommendationStats(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.recommendService.getRecommendationStats(user.userId);
+  }
 }
