@@ -33,7 +33,29 @@ export class UsersService {
   async findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { id },
-      relations: ['records'],
+      relations: ['records', 'achievements', 'goals'],
     });
+  }
+
+  async getUserStats(userId: number) {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const totalRecords = user.records?.length || 0;
+    const totalAchievements = user.achievements?.length || 0;
+    const totalGoals = user.goals?.length || 0;
+    const completedGoals =
+      user.goals?.filter((goal) => goal.isCompleted).length || 0;
+
+    return {
+      totalRecords,
+      totalAchievements,
+      totalGoals,
+      completedGoals,
+      goalCompletionRate:
+        totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0,
+    };
   }
 }

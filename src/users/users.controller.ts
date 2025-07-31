@@ -14,4 +14,11 @@ export class UsersController {
     const user = req.user as { userId: number; email: string };
     return this.usersService.findById(user.userId);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('stats')
+  async getUserStats(@Req() req: Request) {
+    const user = req.user as { userId: number; email: string };
+    return this.usersService.getUserStats(user.userId);
+  }
 }

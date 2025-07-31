@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { GoalsModule } from './goals/goals.module';
+import { WearableModule } from './wearable/wearable.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { envVariables } from './common/const/env.const';
@@ -56,6 +57,7 @@ import { envVariables } from './common/const/env.const';
     UsersModule,
     AchievementsModule,
     GoalsModule,
+    WearableModule,
   ],
   controllers: [AppController],
   providers: [AppService],
