@@ -10,12 +10,9 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { WearableService } from './wearable.service';
+import { WearableProvider } from './entities/wearable-connection.entity';
 import { Request } from 'express';
-import {
-  ConnectWearableDto,
-  SyncWearableDto,
-  WearableProvider,
-} from './dto/wearable.dto';
+import { ConnectWearableDto, SyncWearableDto } from './dto/wearable.dto';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('wearable')
